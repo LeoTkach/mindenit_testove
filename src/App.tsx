@@ -12,6 +12,13 @@ export default function App() {
             </Button>
           )}
         </NavLink>
+        <NavLink to="/">
+          {({ isActive }) => (
+            <Button variant={isActive ? 'default' : 'outline'} className="ml-2">
+              Users
+            </Button>
+          )}
+        </NavLink>
       </div>
 
       <main>
