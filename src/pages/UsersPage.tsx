@@ -8,32 +8,16 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Combobox } from '@/components/ui/combobox';
+import { MultiSelect } from '@/components/ui/multiselect';
 import { users as initialUsers, type User } from '@/data/users';
 import departments from '@/data/departments';
 import countries from '@/data/countries';
 import statuses from '@/data/statuses';
-import { Trash, ChevronDown } from 'lucide-react';
-
+import { Trash } from 'lucide-react';
 import { AddUserDialogForm } from '@/components/forms/AddUserDialogForm';
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>(() => {
     const savedUsers = localStorage.getItem('app_users');
@@ -54,6 +38,7 @@ export default function UsersPage() {
   });
 
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+
   useEffect(() => {
     localStorage.setItem('app_users', JSON.stringify(users));
   }, [users]);
@@ -69,7 +54,6 @@ export default function UsersPage() {
   useEffect(() => {
     localStorage.setItem('app_selectedStatus', selectedStatus);
   }, [selectedStatus]);
-
 
   const areOtherFiltersDisabled = selectedDepartments.length < 3;
 
@@ -114,18 +98,22 @@ export default function UsersPage() {
     });
   }, [users, selectedDepartments, selectedCountry, selectedStatus, areOtherFiltersDisabled]);
 
-
   const handleAddUser = (newUser: User) => {
     setUsers(prevUsers => [...prevUsers, newUser]);
     setIsAddUserDialogOpen(false);
   };
-
 
   const handleDeleteUser = (userName: string) => {
     if (window.confirm(`Are you sure you want to delete ${userName}?`)) {
       setUsers(prevUsers => prevUsers.filter(user => user.name !== userName));
     }
   };
+  
+  const departmentOptions = departments.map(d => ({ label: d.name, value: d.value }));
+  const countryOptions = [{ label: 'All Countries', value: 'ALL' }, ...countries.map(c => ({ label: c.name, value: c.value }))];
+  
+  const statusOptions = statuses.map(s => ({ label: s.name, value: s.value }));
+
 
   return (
     <div className="container mx-auto py-10">
@@ -136,68 +124,35 @@ export default function UsersPage() {
         </p>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-[200px] justify-between">
-                  <span className="truncate">
-                    {selectedDepartments.length === 0
-                      ? "Select departments"
-                      : `${selectedDepartments.length} selected`}
-                  </span>
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[200px]">
-                <DropdownMenuLabel>Select Departments</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {departments.map(dep => (
-                  <DropdownMenuCheckboxItem
-                    key={dep.value}
-                    checked={selectedDepartments.includes(dep.value)}
-                    onSelect={(e: React.SyntheticEvent) => e.preventDefault()}
-                    onCheckedChange={() => handleDepartmentSelect(dep.value)}
-                  >
-                    {dep.name}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Select
+            
+            <MultiSelect
+                options={departmentOptions}
+                selected={selectedDepartments}
+                onChange={handleDepartmentSelect}
+                placeholder="Select departments"
+                searchPlaceholder="Search..."
+                className="w-[200px]"
+            />
+            
+            <Combobox
+              options={countryOptions}
               value={selectedCountry}
-              onValueChange={setSelectedCountry}
+              onChange={setSelectedCountry}
               disabled={areOtherFiltersDisabled}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select country" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Countries</SelectItem>
-                {countries.map(country => (
-                  <SelectItem key={country.value} value={country.value}>
-                    {country.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
+              placeholder="Select country"
+              searchPlaceholder="Search country..."
+              className="w-[180px]"
+            />
+            
+            <Combobox
+              options={statusOptions}
               value={selectedStatus}
-              onValueChange={setSelectedStatus}
+              onChange={setSelectedStatus}
               disabled={areOtherFiltersDisabled}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                {statuses.map(status => (
-                  <SelectItem key={status.value} value={status.value}>
-                    {status.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="Select status"
+              searchPlaceholder="Search status..."
+              className="w-[180px]"
+            />
 
             <Button variant="ghost" onClick={resetFilters}>
               <Trash className="h-5 w-5 text-muted-foreground" />
