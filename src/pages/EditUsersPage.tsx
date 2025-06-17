@@ -40,7 +40,6 @@ export default function EditUsersPage() {
       currentUsers.map(u => (u.name === selectedUserName ? updatedUser : u))
     );
     setSelectedUserName(updatedUser.name);
-    alert('User saved successfully!');
   };
 
   const handleCancelEdit = () => {
