@@ -1,19 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-
+import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
 import { users as initialUsers, type User } from '@/data/users';
-
 import { UserEditForm } from '@/components/forms/UserEditForm';
 
 export default function EditUsersPage() {
-
   const [users, setUsers] = useState<User[]>(() => {
     const savedUsers = localStorage.getItem('app_users');
     return savedUsers ? JSON.parse(savedUsers) : initialUsers;
@@ -49,6 +40,13 @@ export default function EditUsersPage() {
     }
   };
 
+  const userOptions: ComboboxOption[] = useMemo(() => 
+    users.map(user => ({
+      label: user.name,
+      value: user.name,
+    })), [users]
+  );
+
   return (
     <div className="container mx-auto py-10">
       <div className="border rounded-lg p-8 bg-white shadow-sm max-w-4xl mx-auto">
@@ -56,18 +54,15 @@ export default function EditUsersPage() {
 
         <div className="mb-10">
           <label htmlFor="user-select" className="text-sm font-medium text-gray-700">User</label>
-          <Select onValueChange={handleUserSelect} value={selectedUserName}>
-            <SelectTrigger id="user-select" className="mt-1">
-              <SelectValue placeholder="Select a user to edit" />
-            </SelectTrigger>
-            <SelectContent>
-              {users.map(user => (
-                <SelectItem key={user.name} value={user.name}>
-                  {user.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Combobox
+            options={userOptions}
+            value={selectedUserName}
+            onChange={handleUserSelect}
+            placeholder="Select a user to edit"
+            searchPlaceholder="Search user..."
+            emptyText="No user found."
+            className="mt-1"
+          />
         </div>
 
         {selectedUserForEdit && (
